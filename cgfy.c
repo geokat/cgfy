@@ -242,12 +242,14 @@ int main (int argc, char *argv[])
     free(cpus);
     free(mems);
 
-    /* Drop root privileges. */
-    setgroups(1, &gid);
-    setregid(gid, gid);
-    setreuid(uid, uid);
-    setgid(gid);
-    setuid(uid);
+    /* Switch to running as requested user. */
+    if (pwd) {
+        if (setgroups(1, &gid)) { perror("setgroups"); goto err; }
+        if (setregid(gid, gid)) { perror("setregid"); goto err; }
+        if (setreuid(uid, uid)) { perror("setreuid"); goto err; }
+        if (setgid(gid))        { perror("setgid"); goto err; }
+        if (setuid(uid))        { perror("setuid"); goto err; }
+    }
 
     execve(argv[optind], argv + optind, NULL);
     perror("execve");
