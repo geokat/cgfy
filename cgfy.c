@@ -193,6 +193,11 @@ int main (int argc, char *argv[])
     }
 
     if (!found) {
+        if (cgroup_add_value_bool(cgc, "notify_on_release", 1)) {
+            fprintf(stderr,
+                    "%s: failed to set notify_on_release for cgroup\n", argv[0]);
+            goto err;
+        }
         if (memlim &&
             cgroup_add_value_uint64(cgc, "memory.limit_in_bytes", memlim)) {
             fprintf(stderr,
@@ -238,9 +243,9 @@ int main (int argc, char *argv[])
     }
 
     /* Clean up */
-    cgroup_free(&cgroup);
-    free(cpus);
-    free(mems);
+    if (cgroup) cgroup_free(&cgroup);
+    if (cpus) free(cpus);
+    if (mems) free(mems);
 
     /* Switch to running as requested user. */
     if (pwd) {
@@ -256,9 +261,9 @@ int main (int argc, char *argv[])
 
 err:
     puts("error");
-    cgroup_free(&cgroup);
-    free(cpus);
-    free(mems);
+    if (cgroup) cgroup_free(&cgroup);
+    if (cpus) free(cpus);
+    if (mems) free(mems);
     exit(EXIT_FAILURE);
 }
 
